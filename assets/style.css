@@ -1,0 +1,160 @@
+/* 
+   Obsidian Vault RAG Knowledge Assistant — Custom Styles
+*/
+
+/* Global background for dark mode compatibility */
+.stApp {
+    background-color: #0e1117;
+    color: #e0e0e0;
+}
+
+/* Header styling */
+h1, h2, h3 {
+    color: #e0e0e0 !important;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #0e1117;
+    border-right: 1px solid #1e1e2e;
+}
+
+section[data-testid="stSidebar"] .stMarkdown h3 {
+    color: #a78bfa !important;
+}
+
+/* Chat container */
+div[data-testid="stChatMessage"] {
+    border: 1px solid #1e1e2e;
+    border-radius: 12px;
+    margin: 8px 0;
+    padding: 12px;
+}
+
+/* Code blocks */
+code {
+    background-color: #1e1e2e;
+    border-radius: 4px;
+    padding: 2px 6px;
+}
+
+pre {
+    background-color: #1e1e2e !important;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+/* Metrics */
+[data-testid="stMetric"] {
+    background: linear-gradient(135deg, #1e1e2e 0%, #15151f 100%);
+    border: 1px solid #2d2d3f;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+[data-testid="stMetric"] label {
+    color: #a78bfa !important;
+}
+
+[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    color: #e0e0e0 !important;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 4px;
+    background-color: #0e1117;
+}
+
+.stTabs [data-baseweb="tab"] {
+    border-radius: 8px 8px 0 0;
+    padding: 10px 24px;
+    font-weight: 500;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: #1e1e2e !important;
+    color: #a78bfa !important;
+}
+
+/* Buttons */
+.stButton > button {
+    border-radius: 10px;
+    padding: 8px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.stButton > button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+}
+
+/* Expanders */
+.streamlit-expanderHeader {
+    font-weight: 600;
+    color: #c4b5fd !important;
+}
+
+/* Alerts */
+.stAlert {
+    border-radius: 10px;
+}
+
+/* Dividers */
+hr {
+    border-color: #1e1e2e !important;
+    margin: 1rem 0;
+}
+
+/* Input fields */
+.stTextInput input,
+.stSelectbox select {
+    border-radius: 8px;
+}
+
+/* Success messages */
+.stSuccess {
+    background-color: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.3);
+    border-radius: 8px;
+}
+
+/* Info messages */
+.stInfo {
+    background-color: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.3);
+    border-radius: 8px;
+}
+
+/* Warning messages */
+.stWarning {
+    background-color: rgba(234, 179, 8, 0.1);
+    border-color: rgba(234, 179, 8, 0.3);
+    border-radius: 8px;
+}
+
+/* Error messages */
+.stError {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0e1117;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
