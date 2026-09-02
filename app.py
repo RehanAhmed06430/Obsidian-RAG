@@ -14,19 +14,12 @@ from ui.analytics_page import render_analytics_page
 
 
 def _get_api_key() -> str:
-    """Get Gemini API key from environment, Streamlit secrets, or session state."""
-    # 1. Check environment variable
-    key = os.environ.get("GOOGLE_API_KEY", "")
-    if key:
-        return key
-    # 2. Check Streamlit secrets (for Streamlit Cloud deployment)
-    try:
-        key = st.secrets.get("GOOGLE_API_KEY", "")
-        if key:
-            return key
-    except Exception:
-        pass
-    # 3. Return empty (user will enter in sidebar)
+    """Get Gemini API key.
+
+    We do NOT read from Streamlit secrets or environment variables here,
+    so that each user is required to enter their own API key in the sidebar.
+    This keeps your key private when deploying to Streamlit Cloud.
+    """
     return ""
 
 
