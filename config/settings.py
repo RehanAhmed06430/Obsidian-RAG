@@ -11,8 +11,8 @@ EMBEDDING_MODEL = "gemini-embedding-2-preview"
 EMBEDDING_DIMENSIONS = 768
 
 # --- LLM ---
-# Use gemini-2.0-flash which is available in the new google-genai SDK
-LLM_MODEL = "gemini-3.5-flash"
+# gemini-2.0-flash has higher free-tier limits (1500 req/day) vs 3.5-flash (20 req/day)
+LLM_MODEL = "gemini-2.0-flash"
 
 # --- Chunking ---
 DEFAULT_CHUNK_SIZE = 500       # tokens
