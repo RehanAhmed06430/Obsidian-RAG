@@ -5,13 +5,12 @@ Obsidian Vault RAG Knowledge Assistant
 
 import os
 
-# --- Embedding Model (runs locally, no API key needed) ---
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-EMBEDDING_DIMENSIONS = 384
+# --- Embedding Model (Google Gemini API) ---
+EMBEDDING_MODEL = "gemini-embedding-001"
+EMBEDDING_DIMENSIONS = 768
 
-# --- LLM Model (Groq free tier) ---
-# Free models on Groq: llama-3.3-70b-versatile, llama3-70b-8192, mixtral-8x7b-32768
-LLM_MODEL = "llama-3.3-70b-versatile"
+# --- LLM Model (Google Gemini) ---
+LLM_MODEL = "gemini-3.5-flash"  # this is the best llm model from google now (in 2026)
 
 # --- Chunking ---
 DEFAULT_CHUNK_SIZE = 500

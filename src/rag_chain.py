@@ -1,6 +1,6 @@
 """
 RAG Chain — Retrieval-Augmented Generation pipeline
-Uses LangChain to combine retrieval with Groq (Llama 3) generation.
+Uses LangChain to combine retrieval with Google Gemini generation.
 """
 
 import os
@@ -9,7 +9,7 @@ from typing import List, Tuple, Optional
 
 from langchain_core.documents import Document
 from langchain_chroma import Chroma
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.messages import HumanMessage
@@ -44,14 +44,14 @@ Your question: {question}"""
 
 
 def _get_llm():
-    """Create and return a Groq LLM (Llama 3)."""
-    groq_key = os.environ.get("GROQ_API_KEY")
+    """Create and return a Google Gemini LLM."""
+    google_key = os.environ.get("GOOGLE_API_KEY")
 
-    return ChatGroq(
-        groq_api_key=groq_key,
-        model_name=LLM_MODEL,
+    return ChatGoogleGenerativeAI(
+        google_api_key=google_key,
+        model=LLM_MODEL,
         temperature=0.3,
-        max_tokens=2048,
+        max_output_tokens=2048,
     )
 
 

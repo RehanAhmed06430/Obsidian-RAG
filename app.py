@@ -5,6 +5,10 @@ Main Streamlit application entry point.
 
 import streamlit as st
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from config.settings import APP_TITLE, APP_ICON, APP_LAYOUT, PAGE_CHAT, PAGE_EXPLORER, PAGE_ANALYTICS
 from ui.sidebar import render_sidebar
@@ -124,7 +128,7 @@ def main():
     st.markdown("---")
     st.markdown(
         "<div style='text-align: center; color: #666; padding: 10px;'>"
-        "🧠 Obsidian Vault RAG Knowledge Assistant — Powered by Groq + ChromaDB + LangChain"
+        "🧠 Obsidian Vault RAG Knowledge Assistant"
         "</div>",
         unsafe_allow_html=True,
     )

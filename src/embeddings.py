@@ -1,34 +1,36 @@
 """
-Embeddings — Hugging Face sentence-transformers (runs locally, no API key)
+Embeddings — Google Gemini API (embedding-001)
 """
 
+import os
 import time
 from typing import List
 
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_core.documents import Document
 
-from config.settings import EMBEDDING_MODEL
+from config.settings import EMBEDDING_MODEL, EMBEDDING_DIMENSIONS
 
 
 def get_embedding_function(
     model_name: str = EMBEDDING_MODEL,
-) -> HuggingFaceEmbeddings:
+) -> GoogleGenerativeAIEmbeddings:
     """
-    Create and return a HuggingFace embedding function.
+    Create and return a Google Generative AI embedding function.
 
-    Uses sentence-transformers locally — no API key required.
-    Default model: all-MiniLM-L6-v2 (384 dimensions, fast, high quality).
+    Uses Google's embedding-001 model via the Gemini API.
+    Requires GOOGLE_API_KEY environment variable.
+    Default model: models/embedding-001 (768 dimensions).
     """
-    return HuggingFaceEmbeddings(
-        model_name=model_name,
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True},
+    google_key = os.environ.get("GOOGLE_API_KEY")
+    return GoogleGenerativeAIEmbeddings(
+        model=model_name,
+        google_api_key=google_key,
     )
 
 
 def embed_documents_with_retry(
-    embedding_fn: HuggingFaceEmbeddings,
+    embedding_fn: GoogleGenerativeAIEmbeddings,
     documents: List[Document],
     max_retries: int = 3,
     retry_delay: float = 2.0,
@@ -56,4 +58,4 @@ def embed_documents_with_retry(
 
 def get_embedding_dimensions() -> int:
     """Return the embedding dimension for the configured model."""
-    return 384  # all-MiniLM-L6-v2
+    return EMBEDDING_DIMENSIONS  # embedding-001 = 768

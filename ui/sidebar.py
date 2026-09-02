@@ -93,11 +93,11 @@ def render_upload_section():
 
 def process_and_index(uploaded_files):
     """Process uploaded files and create vector store."""
-    # Check Groq API key is configured
-    groq_key = os.environ.get("GROQ_API_KEY")
-    if not groq_key:
-        st.error("❌ GROQ_API_KEY not found. Please add it to your .env file.")
-        st.info("Get a free key at: https://console.groq.com")
+    # Check Google API key is configured
+    google_key = os.environ.get("GOOGLE_API_KEY")
+    if not google_key:
+        st.error("❌ GOOGLE_API_KEY not found. Please add it to your .env file.")
+        st.info("Get a free key at: https://aistudio.google.com/apikey")
         return
 
     chunk_size = st.session_state.get("chunk_size", DEFAULT_CHUNK_SIZE)
