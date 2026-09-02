@@ -87,6 +87,21 @@ streamlit run app.py
    - "Summarize my notes on neural networks"
    - "What did I learn on August 1st?"
 
+### Streamlit Cloud Deployment (Free)
+
+1. **Fork/Clone** this repository to your GitHub account
+2. Go to [share.streamlit.io](https://share.streamlit.io)
+3. Click **"New app"** and select this repository
+4. Set **Main file path** to `app.py`
+5. Click **"Advanced settings"** → **"Secrets"**
+6. Add your API key:
+   ```
+   GOOGLE_API_KEY = "your_gemini_api_key_here"
+   ```
+7. Click **"Deploy"**
+
+Your app will be live at `https://yourusername-obsidian-rag-app.streamlit.app`
+
 ## 📁 Project Structure
 
 ```

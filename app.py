@@ -13,6 +13,23 @@ from ui.vault_explorer import render_vault_explorer
 from ui.analytics_page import render_analytics_page
 
 
+def _get_api_key() -> str:
+    """Get Gemini API key from environment, Streamlit secrets, or session state."""
+    # 1. Check environment variable
+    key = os.environ.get("GOOGLE_API_KEY", "")
+    if key:
+        return key
+    # 2. Check Streamlit secrets (for Streamlit Cloud deployment)
+    try:
+        key = st.secrets.get("GOOGLE_API_KEY", "")
+        if key:
+            return key
+    except Exception:
+        pass
+    # 3. Return empty (user will enter in sidebar)
+    return ""
+
+
 def init_session_state():
     """Initialize Streamlit session state variables."""
     defaults = {
@@ -22,7 +39,7 @@ def init_session_state():
         "documents": [],
         "chunks": [],
         "chat_history": [],
-        "google_api_key": os.environ.get("GOOGLE_API_KEY", ""),
+        "google_api_key": _get_api_key(),
     }
     for key, value in defaults.items():
         if key not in st.session_state:

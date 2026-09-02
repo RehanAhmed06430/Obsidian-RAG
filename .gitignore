@@ -26,6 +26,7 @@ build/
 # Streamlit
 .streamlit/secrets.toml
 chroma_db/
+streamlit.log
 
 # OS
 .DS_Store
