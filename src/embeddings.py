@@ -1,44 +1,45 @@
 """
-Embeddings — Google Gemini embedding model wrapper
+Embeddings — Hugging Face sentence-transformers (runs locally, no API key)
 """
 
 import time
 from typing import List
 
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 
 from config.settings import EMBEDDING_MODEL
 
 
 def get_embedding_function(
-    api_key: str,
     model_name: str = EMBEDDING_MODEL,
-) -> GoogleGenerativeAIEmbeddings:
+) -> HuggingFaceEmbeddings:
     """
-    Create and return a Gemini embedding function.
-    Wraps GoogleGenerativeAIEmbeddings from LangChain.
+    Create and return a HuggingFace embedding function.
+
+    Uses sentence-transformers locally — no API key required.
+    Default model: all-MiniLM-L6-v2 (384 dimensions, fast, high quality).
     """
-    return GoogleGenerativeAIEmbeddings(
-        model=model_name,
-        google_api_key=api_key,
+    return HuggingFaceEmbeddings(
+        model_name=model_name,
+        model_kwargs={"device": "cpu"},
+        encode_kwargs={"normalize_embeddings": True},
     )
 
 
 def embed_documents_with_retry(
-    embedding_fn: GoogleGenerativeAIEmbeddings,
+    embedding_fn: HuggingFaceEmbeddings,
     documents: List[Document],
     max_retries: int = 3,
     retry_delay: float = 2.0,
 ) -> List[Document]:
     """
-    Embed documents with retry logic for API rate limits.
+    Embed documents with retry logic.
     Returns the same documents (embeddings are handled by ChromaDB internally).
     """
     for attempt in range(max_retries):
         try:
-            # ChromaDB handles embedding via the embedding function,
-            # so we just verify the function works by embedding a test string.
+            # Verify the embedding function works
             embedding_fn.embed_query("test")
             return documents
         except Exception as e:
@@ -55,5 +56,4 @@ def embed_documents_with_retry(
 
 def get_embedding_dimensions() -> int:
     """Return the embedding dimension for the configured model."""
-    # embedding-004 uses 768 dimensions
-    return 768
+    return 384  # all-MiniLM-L6-v2

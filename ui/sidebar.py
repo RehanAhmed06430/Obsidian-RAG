@@ -1,9 +1,9 @@
 """
-Sidebar — Upload, settings, vault info, and API key management
+Sidebar — Upload, settings, vault info (no API key input — token from .env)
 """
 
-import streamlit as st
 import os
+import streamlit as st
 
 from config.settings import (
     DEFAULT_CHUNK_SIZE,
@@ -28,8 +28,7 @@ def render_sidebar():
 
         st.divider()
 
-        # --- API Key ---
-        api_key = render_api_key_section()
+        st.info("🔑 API key is configured via `.env` file — no manual entry needed.")
 
         st.divider()
 
@@ -51,31 +50,7 @@ def render_sidebar():
         # --- Actions ---
         render_actions_section()
 
-        return api_key, uploaded_files, chunk_size, chunk_overlap, top_k
-
-
-def render_api_key_section():
-    """Render API key input."""
-    st.subheader("🔑 API Key")
-
-    api_key = st.session_state.get("google_api_key", "")
-
-    api_key = st.text_input(
-        "Google Gemini API Key",
-        value=api_key,
-        type="password",
-        help="Get a free key at [aistudio.google.com](https://aistudio.google.com)",
-        placeholder="AIza...",
-    )
-
-    if api_key:
-        st.session_state["google_api_key"] = api_key
-        os.environ["GOOGLE_API_KEY"] = api_key
-        st.success("✅ API key set")
-    else:
-        st.info("🔑 Enter your Gemini API key to start")
-
-    return api_key
+        return None, uploaded_files, chunk_size, chunk_overlap, top_k
 
 
 def render_upload_section():
@@ -110,7 +85,6 @@ def render_upload_section():
     if uploaded_files:
         st.success(f"📦 {len(uploaded_files)} file(s) ready")
 
-        # Process button
         if st.button("🚀 Process & Index Vault", type="primary", use_container_width=True):
             process_and_index(uploaded_files)
 
@@ -119,9 +93,11 @@ def render_upload_section():
 
 def process_and_index(uploaded_files):
     """Process uploaded files and create vector store."""
-    api_key = st.session_state.get("google_api_key", "")
-    if not api_key:
-        st.error("❌ Please enter your API key first.")
+    # Check Groq API key is configured
+    groq_key = os.environ.get("GROQ_API_KEY")
+    if not groq_key:
+        st.error("❌ GROQ_API_KEY not found. Please add it to your .env file.")
+        st.info("Get a free key at: https://console.groq.com")
         return
 
     chunk_size = st.session_state.get("chunk_size", DEFAULT_CHUNK_SIZE)
@@ -143,9 +119,9 @@ def process_and_index(uploaded_files):
         progress.progress(40, text=f"✂️ Splitting into chunks (size={chunk_size})...")
         chunks = chunk_documents(documents, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
 
-        # Step 3: Create embeddings & vector store
-        progress.progress(60, text="🧮 Generating embeddings...")
-        embedding_fn = get_embedding_function(api_key)
+        # Step 3: Create embeddings & vector store (embeddings run locally)
+        progress.progress(60, text="🧮 Generating embeddings (first run downloads model)...")
+        embedding_fn = get_embedding_function()
 
         progress.progress(75, text="💾 Building vector database...")
         vector_store = create_vector_store(chunks, embedding_fn)
@@ -235,7 +211,6 @@ def render_vault_stats_section():
             if len(tags) > 10:
                 st.caption(f"  ... and {len(tags) - 10} more")
 
-        # Collection stats from ChromaDB
         collection_stats = get_collection_stats()
         st.caption(f"🗄️ DB: {collection_stats.get('total_chunks', 0)} vectors stored")
     else:
@@ -259,6 +234,5 @@ def render_actions_section():
         st.success("✅ Chat cleared!")
         st.rerun()
 
-    # Download sample vault
     st.markdown("---")
     st.caption("📥 **Demo:** Try the sample vault included in the repo!")

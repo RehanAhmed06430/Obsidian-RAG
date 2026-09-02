@@ -1,16 +1,18 @@
 """
 RAG Chain — Retrieval-Augmented Generation pipeline
-Uses LangChain to combine retrieval with Gemini generation.
+Uses LangChain to combine retrieval with Groq (Llama 3) generation.
 """
 
+import os
+import re
 from typing import List, Tuple, Optional
 
 from langchain_core.documents import Document
 from langchain_chroma import Chroma
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.messages import HumanMessage
 
 from config.settings import LLM_MODEL, DEFAULT_TOP_K
 from src.utils import extract_response_text
@@ -41,23 +43,27 @@ RAG_USER_PROMPT = """Based on your personal notes, here is the relevant informat
 Your question: {question}"""
 
 
+def _get_llm():
+    """Create and return a Groq LLM (Llama 3)."""
+    groq_key = os.environ.get("GROQ_API_KEY")
+
+    return ChatGroq(
+        groq_api_key=groq_key,
+        model_name=LLM_MODEL,
+        temperature=0.3,
+        max_tokens=2048,
+    )
+
+
 def create_rag_chain(
     vector_store: Chroma,
-    api_key: str,
     top_k: int = DEFAULT_TOP_K,
 ) -> Tuple:
     """
     Create a RAG chain that retrieves relevant chunks and generates answers.
-
     Returns (rag_chain, retriever) tuple.
     """
-    # Initialize the LLM
-    llm = ChatGoogleGenerativeAI(
-        model=LLM_MODEL,
-        google_api_key=api_key,
-        temperature=0.3,
-        max_output_tokens=2048,
-    )
+    llm = _get_llm()
 
     # Create retriever
     retriever = vector_store.as_retriever(
@@ -81,13 +87,10 @@ def create_rag_chain(
 
     # Custom parser: extract text safely, then strip <thinking> tags
     def clean_response(raw) -> str:
-        import re
-        # raw may be an AIMessage or a plain string depending on the chain stage
         if isinstance(raw, str):
             text = raw
         else:
             text = extract_response_text(raw)
-        # Remove everything between <thinking> and </thinking>
         text = re.sub(r'<thinking>.*?</thinking>', '', text, flags=re.DOTALL).strip()
         return text
 
@@ -108,26 +111,21 @@ def query_rag(
     rag_chain,
     question: str,
 ) -> Tuple[str, List[Document]]:
-    """
-    Query the RAG chain with a question.
-    Returns (answer_text, retrieved_documents).
-    """
+    """Query the RAG chain with a question."""
     answer = rag_chain.invoke(question)
     return answer, []
 
 
 def query_rag_with_sources(
     vector_store: Chroma,
-    api_key: str,
     question: str,
     chat_history: Optional[List] = None,
     top_k: int = DEFAULT_TOP_K,
 ) -> Tuple[str, List[Document]]:
     """
     Complete RAG query that returns both the answer and source documents.
-    Uses the simpler direct approach for reliability.
     """
-    from langchain_google_genai import ChatGoogleGenerativeAI
+    llm = _get_llm()
 
     # Retrieve relevant chunks
     retriever = vector_store.as_retriever(
@@ -149,13 +147,13 @@ def query_rag_with_sources(
     # Build prompt with optional chat history
     history_text = ""
     if chat_history:
-        for msg in chat_history[-6:]:  # last 3 exchanges
+        for msg in chat_history[-6:]:
             role = msg.get("role", "user")
             content = msg.get("content", "")
             history_text += f"{role.title()}: {content}\n"
         history_text += "\n"
 
-    system_msg = f"""You are a knowledgeable, friendly assistant for an Obsidian vault. Answer based ONLY on the provided context from the user's notes.
+    system_msg = """You are a knowledgeable, friendly assistant for an Obsidian vault. Answer based ONLY on the provided context from the user's notes.
 
 How to respond:
 - Write in a natural, conversational tone like ChatGPT
@@ -176,22 +174,10 @@ Question: {question}
 Answer:"""
 
     # Generate answer
-    llm = ChatGoogleGenerativeAI(
-        model=LLM_MODEL,
-        google_api_key=api_key,
-        temperature=0.3,
-        max_output_tokens=2048,
-    )
-
-    from langchain_core.messages import HumanMessage
     response = llm.invoke([HumanMessage(content=full_prompt)])
 
-    # Extract clean text — handles both Gemini 1.5/2.x (plain string)
-    # and Gemini 3.x (list-of-dicts with thought signatures)
+    # Extract clean text
     answer = extract_response_text(response)
-
-    # Strip any residual <thinking> tags
-    import re
     answer = re.sub(r'<thinking>.*?</thinking>', '', answer, flags=re.DOTALL).strip()
 
     return answer, retrieved_docs

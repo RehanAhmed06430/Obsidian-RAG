@@ -5,18 +5,17 @@ Obsidian Vault RAG Knowledge Assistant
 
 import os
 
-# --- Embedding Model ---
-# gemini-embedding-2-preview is the recommended model for the new google-genai SDK
-EMBEDDING_MODEL = "gemini-embedding-2-preview"
-EMBEDDING_DIMENSIONS = 768
+# --- Embedding Model (runs locally, no API key needed) ---
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDING_DIMENSIONS = 384
 
-# --- LLM ---
-# gemini-2.0-flash has higher free-tier limits (1500 req/day) vs 3.5-flash (20 req/day)
-LLM_MODEL = "gemini-2.0-flash"
+# --- LLM Model (Groq free tier) ---
+# Free models on Groq: llama-3.3-70b-versatile, llama3-70b-8192, mixtral-8x7b-32768
+LLM_MODEL = "llama-3.3-70b-versatile"
 
 # --- Chunking ---
-DEFAULT_CHUNK_SIZE = 500       # tokens
-DEFAULT_CHUNK_OVERLAP = 50     # tokens
+DEFAULT_CHUNK_SIZE = 500
+DEFAULT_CHUNK_OVERLAP = 50
 
 # --- Retrieval ---
 DEFAULT_TOP_K = 5
@@ -35,7 +34,7 @@ PAGE_EXPLORER = "📚 Vault Explorer"
 PAGE_ANALYTICS = "📊 Analytics"
 
 # --- Conversation ---
-MAX_HISTORY_LENGTH = 10  # max exchanges to keep in context
+MAX_HISTORY_LENGTH = 10
 
 # --- File Upload ---
 SUPPORTED_EXTENSIONS = {".md", ".markdown"}

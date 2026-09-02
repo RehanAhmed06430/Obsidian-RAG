@@ -13,16 +13,6 @@ from ui.vault_explorer import render_vault_explorer
 from ui.analytics_page import render_analytics_page
 
 
-def _get_api_key() -> str:
-    """Get Gemini API key.
-
-    We do NOT read from Streamlit secrets or environment variables here,
-    so that each user is required to enter their own API key in the sidebar.
-    This keeps your key private when deploying to Streamlit Cloud.
-    """
-    return ""
-
-
 def init_session_state():
     """Initialize Streamlit session state variables."""
     defaults = {
@@ -32,7 +22,6 @@ def init_session_state():
         "documents": [],
         "chunks": [],
         "chat_history": [],
-        "google_api_key": _get_api_key(),
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -116,7 +105,7 @@ def main():
     load_custom_css()
 
     # Render sidebar and get user inputs
-    api_key, uploaded_files, chunk_size, chunk_overlap, top_k = render_sidebar()
+    _, uploaded_files, chunk_size, chunk_overlap, top_k = render_sidebar()
 
     # Tab navigation
     st.markdown("---")
@@ -135,7 +124,7 @@ def main():
     st.markdown("---")
     st.markdown(
         "<div style='text-align: center; color: #666; padding: 10px;'>"
-        "🧠 Obsidian Vault RAG Knowledge Assistant — Powered by Gemini + ChromaDB + LangChain"
+        "🧠 Obsidian Vault RAG Knowledge Assistant — Powered by Groq + ChromaDB + LangChain"
         "</div>",
         unsafe_allow_html=True,
     )

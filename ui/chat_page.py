@@ -75,12 +75,7 @@ def render_chat_history():
 
 def handle_question(question: str):
     """Process a user question and display the response."""
-    api_key = st.session_state.get("google_api_key", "")
     top_k = st.session_state.get("top_k", DEFAULT_TOP_K)
-
-    if not api_key:
-        st.error("❌ Please enter your API key in the sidebar.")
-        return
 
     # Add user message
     ChatManager.add_message("user", question)
@@ -92,7 +87,7 @@ def handle_question(question: str):
     with st.chat_message("assistant"):
         with st.spinner("🔍 Searching your notes and generating answer..."):
             try:
-                embedding_fn = get_embedding_function(api_key)
+                embedding_fn = get_embedding_function()
                 vector_store = get_vector_store(embedding_fn)
 
                 # Check if vector store has data
@@ -104,7 +99,6 @@ def handle_question(question: str):
                     chat_history = ChatManager.get_history_for_llm()
                     response, sources = query_rag_with_sources(
                         vector_store=vector_store,
-                        api_key=api_key,
                         question=question,
                         chat_history=chat_history[:-1],  # exclude current question
                         top_k=top_k,
