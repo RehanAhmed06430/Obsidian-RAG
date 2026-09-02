@@ -6,7 +6,7 @@ Obsidian Vault RAG Knowledge Assistant
 import os
 
 # --- Embedding Model (Google Gemini API) ---
-EMBEDDING_MODEL = "gemini-embedding-001"
+EMBEDDING_MODEL = "gemini-embedding-001" 
 EMBEDDING_DIMENSIONS = 768
 
 # --- LLM Model (Google Gemini) ---
