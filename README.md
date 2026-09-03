@@ -146,8 +146,8 @@ compiler_project/
 | Component | Technology | Why |
 |-----------|-----------|-----|
 | **Frontend** | Streamlit | Free hosting, rapid UI, interactive |
-| **LLM** | Google Gemini 1.5 Flash | Free tier, fast, great for RAG |
-| **Embeddings** | Gemini text-embedding-004 | Free, 768 dimensions |
+| **LLM** | Google Gemini 3.5 Flash | Free tier, fast, great for RAG |
+| **Embeddings** | Gemini text-embedding-001 | Free, 768 dimensions |
 | **Vector DB** | ChromaDB | Simple, in-process, no setup |
 | **Framework** | LangChain | Clean RAG abstractions |
 | **Chunking** | RecursiveCharacterTextSplitter | Markdown-aware splitting |
