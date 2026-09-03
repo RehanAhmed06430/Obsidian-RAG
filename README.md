@@ -139,8 +139,6 @@ compiler_project/
 │   └── Daily Notes/
 │       ├── 2026-08-01.md
 │       └── 2026-08-15.md
-│
-└── tests/                    # Tests
 ```
 
 ## 🔧 Tech Stack
