@@ -109,7 +109,7 @@ def main():
     load_custom_css()
 
     # Render sidebar and get user inputs
-    _, uploaded_files, chunk_size, chunk_overlap, top_k = render_sidebar()
+    uploaded_files = render_sidebar()
 
     # Tab navigation
     st.markdown("---")

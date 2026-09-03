@@ -8,8 +8,6 @@ import streamlit as st
 from config.settings import (
     DEFAULT_CHUNK_SIZE,
     DEFAULT_CHUNK_OVERLAP,
-    DEFAULT_TOP_K,
-    MAX_TOP_K,
     SUPPORTED_EXTENSIONS,
 )
 from src.document_processor import process_vault, get_vault_stats
@@ -37,11 +35,6 @@ def render_sidebar():
 
         st.divider()
 
-        # --- Settings ---
-        chunk_size, chunk_overlap, top_k = render_settings_section()
-
-        st.divider()
-
         # --- Vault Stats ---
         render_vault_stats_section()
 
@@ -50,7 +43,7 @@ def render_sidebar():
         # --- Actions ---
         render_actions_section()
 
-        return None, uploaded_files, chunk_size, chunk_overlap, top_k
+        return uploaded_files
 
 
 def render_upload_section():
@@ -100,8 +93,8 @@ def process_and_index(uploaded_files):
         st.info("Get a free key at: https://aistudio.google.com/apikey")
         return
 
-    chunk_size = st.session_state.get("chunk_size", DEFAULT_CHUNK_SIZE)
-    chunk_overlap = st.session_state.get("chunk_overlap", DEFAULT_CHUNK_OVERLAP)
+    chunk_size = DEFAULT_CHUNK_SIZE
+    chunk_overlap = DEFAULT_CHUNK_OVERLAP
 
     progress = st.progress(0, text="Starting processing...")
 
@@ -147,42 +140,6 @@ def process_and_index(uploaded_files):
         st.error(f"❌ Error processing vault: {str(e)}")
     finally:
         progress.empty()
-
-
-def render_settings_section():
-    """Render settings controls."""
-    st.subheader("⚙️ Settings")
-
-    chunk_size = st.slider(
-        "Chunk size (tokens)",
-        min_value=100,
-        max_value=2000,
-        value=st.session_state.get("chunk_size", DEFAULT_CHUNK_SIZE),
-        step=50,
-        help="Larger chunks = more context but less precise retrieval",
-        key="chunk_size",
-    )
-
-    chunk_overlap = st.slider(
-        "Chunk overlap (tokens)",
-        min_value=0,
-        max_value=500,
-        value=st.session_state.get("chunk_overlap", DEFAULT_CHUNK_OVERLAP),
-        step=10,
-        help="Overlap helps maintain context between chunks",
-        key="chunk_overlap",
-    )
-
-    top_k = st.slider(
-        "Top-K retrieval",
-        min_value=1,
-        max_value=MAX_TOP_K,
-        value=st.session_state.get("top_k", DEFAULT_TOP_K),
-        help="Number of chunks to retrieve for each query",
-        key="top_k",
-    )
-
-    return chunk_size, chunk_overlap, top_k
 
 
 def render_vault_stats_section():

@@ -75,7 +75,7 @@ def render_chat_history():
 
 def handle_question(question: str):
     """Process a user question and display the response."""
-    top_k = st.session_state.get("top_k", DEFAULT_TOP_K)
+    top_k = DEFAULT_TOP_K
 
     # Add user message
     ChatManager.add_message("user", question)
