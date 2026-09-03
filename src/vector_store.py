@@ -2,6 +2,7 @@
 Vector Store — ChromaDB operations for vector storage & retrieval
 """
 
+import os
 import shutil
 from typing import List, Optional, Dict, Any
 
@@ -26,6 +27,43 @@ def _get_chroma_settings() -> ChromaSettings:
     )
 
 
+def _open_persistent_client(persist_directory: str = CHROMA_PERSIST_DIR):
+    """Open a PersistentClient, creating the directory if needed."""
+    os.makedirs(persist_directory, exist_ok=True)
+    return chromadb.PersistentClient(
+        path=persist_directory,
+        settings=_get_chroma_settings(),
+    )
+
+
+def _close_client(client) -> None:
+    """
+    Close a ChromaDB client, releasing its SQLite file handles.
+
+    ChromaDB 1.x keeps database files open until close() is called;
+    without it, long-lived processes (e.g. Streamlit servers) leak
+    handles and eventually fail with "unable to open database file".
+    Older ChromaDB versions have no close() and are GC-managed, so
+    this is a safe no-op there.
+    """
+    close = getattr(client, "close", None)
+    if close is not None:
+        try:
+            close()
+        except Exception:
+            pass
+
+
+def close_vector_store(vector_store: Chroma) -> None:
+    """
+    Close a langchain Chroma vector store, releasing its DB handles.
+    Call this once you are done querying/writing the store.
+    """
+    client = getattr(vector_store, "_client", None)
+    if client is not None:
+        _close_client(client)
+
+
 def get_vector_store(
     embedding_fn: GoogleGenerativeAIEmbeddings,
     collection_name: str = CHROMA_COLLECTION_NAME,
@@ -33,6 +71,9 @@ def get_vector_store(
 ) -> Chroma:
     """
     Get or create a ChromaDB vector store.
+
+    Callers should close the returned store with close_vector_store()
+    once done to release its SQLite file handles.
     """
     return Chroma(
         collection_name=collection_name,
@@ -51,6 +92,9 @@ def create_vector_store(
     """
     Create a new ChromaDB vector store from document chunks.
     If the collection already exists, it is recreated.
+
+    Callers should close the returned store with close_vector_store()
+    once done to release its SQLite file handles.
     """
     # Clear existing data to start fresh
     clear_collection(persist_directory, collection_name)
@@ -104,11 +148,9 @@ def get_collection_stats(
     """
     Get statistics about the current ChromaDB collection.
     """
+    client = None
     try:
-        client = chromadb.PersistentClient(
-            path=persist_directory,
-            settings=_get_chroma_settings(),
-        )
+        client = _open_persistent_client(persist_directory)
         collection = client.get_collection(collection_name)
         count = collection.count()
 
@@ -123,6 +165,8 @@ def get_collection_stats(
             "total_chunks": 0,
             "persist_directory": persist_directory,
         }
+    finally:
+        _close_client(client)
 
 
 def clear_collection(
@@ -133,15 +177,15 @@ def clear_collection(
     Clear/delete the ChromaDB collection.
     Returns True if successful.
     """
+    client = None
     try:
-        client = chromadb.PersistentClient(
-            path=persist_directory,
-            settings=_get_chroma_settings(),
-        )
+        client = _open_persistent_client(persist_directory)
         client.delete_collection(collection_name)
         return True
     except Exception:
         return False
+    finally:
+        _close_client(client)
 
 
 def clear_all_data(persist_directory: str = CHROMA_PERSIST_DIR) -> bool:
@@ -149,16 +193,17 @@ def clear_all_data(persist_directory: str = CHROMA_PERSIST_DIR) -> bool:
     Delete the entire ChromaDB persist directory.
     Used when resetting the entire vector store.
     """
+    client = None
     try:
         # Try to delete collection first
         try:
-            client = chromadb.PersistentClient(
-                path=persist_directory,
-                settings=_get_chroma_settings(),
-            )
+            client = _open_persistent_client(persist_directory)
             client.delete_collection(CHROMA_COLLECTION_NAME)
         except Exception:
             pass
+        finally:
+            _close_client(client)
+            client = None
 
         # Then remove the directory
         shutil.rmtree(persist_directory, ignore_errors=True)

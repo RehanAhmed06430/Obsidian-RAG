@@ -4,6 +4,10 @@ Obsidian Vault RAG Knowledge Assistant
 """
 
 import os
+from pathlib import Path
+
+# Project root (directory containing this project's settings/config)
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # --- Embedding Model (Google Gemini API) ---
 EMBEDDING_MODEL = "gemini-embedding-001" 
@@ -22,7 +26,9 @@ MAX_TOP_K = 10
 
 # --- ChromaDB ---
 CHROMA_COLLECTION_NAME = "obsidian_vault"
-CHROMA_PERSIST_DIR = "chroma_db"
+# Absolute path (anchored to project root) so the DB resolves correctly
+# no matter which working directory the app is launched from.
+CHROMA_PERSIST_DIR = str(PROJECT_ROOT / "chroma_db")
 
 # --- UI ---
 APP_TITLE = "🧠 Obsidian Vault RAG Assistant"

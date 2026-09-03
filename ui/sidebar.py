@@ -12,7 +12,13 @@ from config.settings import (
 )
 from src.document_processor import process_vault, get_vault_stats
 from src.chunker import chunk_documents, get_chunk_stats
-from src.vector_store import get_vector_store, create_vector_store, get_collection_stats, clear_all_data
+from src.vector_store import (
+    get_vector_store,
+    create_vector_store,
+    get_collection_stats,
+    clear_all_data,
+    close_vector_store,
+)
 from src.embeddings import get_embedding_function
 from src.utils import extract_zip_to_files, filter_markdown_files
 
@@ -118,6 +124,9 @@ def process_and_index(uploaded_files):
 
         progress.progress(75, text="💾 Building vector database...")
         vector_store = create_vector_store(chunks, embedding_fn)
+        # Data is persisted on disk; release the DB handles so repeated
+        # indexing doesn't leak open ChromaDB clients in the server process.
+        close_vector_store(vector_store)
 
         # Step 4: Store stats in session
         vault_stats = get_vault_stats(documents)

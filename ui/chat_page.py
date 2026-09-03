@@ -7,7 +7,7 @@ from typing import List, Dict, Any
 
 from config.settings import DEFAULT_TOP_K
 from src.chat_manager import ChatManager
-from src.vector_store import get_vector_store, similarity_search_with_scores
+from src.vector_store import get_vector_store, similarity_search_with_scores, close_vector_store
 from src.embeddings import get_embedding_function
 from src.rag_chain import query_rag_with_sources
 
@@ -89,34 +89,38 @@ def handle_question(question: str):
             try:
                 embedding_fn = get_embedding_function()
                 vector_store = get_vector_store(embedding_fn)
+                try:
+                    # Check if vector store has data
+                    collection_stats = vector_store._collection.count() if hasattr(vector_store, '_collection') else 0
+                    if collection_stats == 0:
+                        response = "It looks like the vault hasn't been indexed yet. Please process your files using the sidebar."
+                        sources = []
+                    else:
+                        chat_history = ChatManager.get_history_for_llm()
+                        response, sources = query_rag_with_sources(
+                            vector_store=vector_store,
+                            question=question,
+                            chat_history=chat_history[:-1],  # exclude current question
+                            top_k=top_k,
+                        )
 
-                # Check if vector store has data
-                collection_stats = vector_store._collection.count() if hasattr(vector_store, '_collection') else 0
-                if collection_stats == 0:
-                    response = "It looks like the vault hasn't been indexed yet. Please process your files using the sidebar."
-                    sources = []
-                else:
-                    chat_history = ChatManager.get_history_for_llm()
-                    response, sources = query_rag_with_sources(
-                        vector_store=vector_store,
-                        question=question,
-                        chat_history=chat_history[:-1],  # exclude current question
-                        top_k=top_k,
-                    )
+                    st.markdown(response)
 
-                st.markdown(response)
+                    # Display sources
+                    if sources:
+                        with st.expander("📚 Sources", expanded=False):
+                            st.markdown(ChatManager.format_sources_for_display(sources))
 
-                # Display sources
-                if sources:
-                    with st.expander("📚 Sources", expanded=False):
-                        st.markdown(ChatManager.format_sources_for_display(sources))
-
-                # Save to history
-                source_dicts = []
-                for doc in sources:
-                    if hasattr(doc, "metadata"):
-                        source_dicts.append(doc.metadata)
-                ChatManager.add_message("assistant", response, source_dicts)
+                    # Save to history
+                    source_dicts = []
+                    for doc in sources:
+                        if hasattr(doc, "metadata"):
+                            source_dicts.append(doc.metadata)
+                    ChatManager.add_message("assistant", response, source_dicts)
+                finally:
+                    # Release DB handles after each query so long-running
+                    # chat sessions don't leak open ChromaDB clients.
+                    close_vector_store(vector_store)
 
             except Exception as e:
                 error_msg = f"Sorry, I encountered an error: {str(e)}"
